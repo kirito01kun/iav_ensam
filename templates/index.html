@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PFE</title>
+    <!-- Bootstrap files -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    
+    <!--Css from static-->
+    <link rel="stylesheet" href="static/styles.css">
+
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" style="display: none;">
+    <symbol id="wave">
+        <path d="M420,20c21.5-0.4,38.8-2.5,51.1-4.5c13.4-2.2,26.5-5.2,27.3-5.4C514,6.5,518,4.7,528.5,2.7c7.1-1.3,17.9-2.8,31.5-2.7c0,0,0,0,0,0v20H420z"></path>
+        <path d="M420,20c-21.5-0.4-38.8-2.5-51.1-4.5c-13.4-2.2-26.5-5.2-27.3-5.4C326,6.5,322,4.7,311.5,2.7C304.3,1.4,293.6-0.1,280,0c0,0,0,0,0,0v20H420z"></path>
+        <path d="M140,20c21.5-0.4,38.8-2.5,51.1-4.5c13.4-2.2,26.5-5.2,27.3-5.4C234,6.5,238,4.7,248.5,2.7c7.1-1.3,17.9-2.8,31.5-2.7c0,0,0,0,0,0v20H140z"></path>
+        <path d="M140,20c-21.5-0.4-38.8-2.5-51.1-4.5c-13.4-2.2-26.5-5.2-27.3-5.4C46,6.5,42,4.7,31.5,2.7C24.3,1.4,13.6-0.1,0,0c0,0,0,0,0,0l0,20H140z"></path>
+    </symbol>
+</svg>
+
+
+</head>
+
+<body class="background-image">
+    <div class="header bg-dark py-2">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="https://iav.ac.ma/" target="_blank">
+                <img src="{{ url_for('static', filename='IAVlogo.jpg') }}" alt="Logo" class="logo">
+            </a>
+            <div class="header-text text-white">
+                PFE Master GE ENSAM RABAT
+            </div>
+        </div>
+    </div>
+
+
+    <div class="overlay text-white p-4 mb-5 mt-5 rounded">
+        <div class="row">
+            <div class="col-md-6 mb-5 mt-1 text-center">
+                <p>Reservoir percentage:</p>
+                  <div class="water-jar">
+                    <div class="water-filling">
+                      <div class="percentNum" id="count">0</div>
+                      <div class="percentB">%</div>
+                    </div>
+                    <div id="water" class="water">
+                      <svg viewBox="0 0 560 20" class="water_wave water_wave_back">
+                        <use xlink:href="#wave"></use>
+                      </svg>
+                      <svg viewBox="0 0 560 20" class="water_wave water_wave_front">
+                        <use xlink:href="#wave"></use>
+                      </svg>
+                    </div>
+                  </div>
+            </div>
+            <div class="col-md-6 mb-5 mt-5 text-center">
+                <p>Choose the opening percentage:</p>
+                <div class="value" id="currentPercentage">0</div>
+                    <input type="range" name="percentage" id="percentageInput" min="0" max="100" step="25" value="0">
+                </div>
+            <div class="col-md-12 mb-5 mt-5 text-center">
+                <p>GPS values:</p>
+                <p>XXXXXX XXXXXXXXXX XXXXXXXXXX:</p>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="footer bg-dark py-2 mt-5">
+        <div class="container text-white text-center">
+            Realise par LAGSYER Meryeme
+        </div>
+    </div>
+
+
+    <script>
+        function setWaterDisplay(percent){
+            document.getElementById("count").innerHTML = percent;
+            document.getElementById("water").style.transform = 'translate(0,' + (100 - percent) + '%)';
+        }
+    
+        function updateWaterLevel() {
+            fetch('/get_water_level')
+                .then(response => response.json())
+                .then(data => {
+                    setWaterDisplay(data.water_level);
+                })
+                .catch(error => {
+                    console.error('Error fetching water level:', error);
+                });
+        }
+    
+        setInterval(updateWaterLevel, 1000);
+    
+        var percentageInput = document.getElementById("percentageInput");
+        percentageInput.addEventListener("input", function () {
+            var newPercentage = percentageInput.value;
+            currentPercentage.textContent = newPercentage;
+            sendPercentageToServer(newPercentage);
+        });
+    
+        function sendPercentageToServer(percentage) {
+            fetch('/update_percentage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'percentage=' + encodeURIComponent(percentage)
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    console.log("Percentage updated on the server.");
+                } else {
+                    console.error("Failed to update percentage on the server.");
+                }
+            })
+            .catch(error => {
+                console.error('Error updating percentage on the server:', error);
+            });
+        }
+    </script>
+    
+</body>
+</html>
