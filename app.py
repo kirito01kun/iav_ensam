@@ -3,41 +3,41 @@ import threading
 import os
 import RPi.GPIO as GPIO
 import time
-import board
-import busio
-import adafruit_gps
 
+ 
 app = Flask(__name__)
 
 calculated_water_level = 100
 
-# Configure GPIO pins for sensors
+# Configure GPIO pins for sensors 
 SENSOR_PINS = [17, 18, 22, 23]
 
 # Configure GPIO pin for servo motor
 SERVO_PIN = 27  # Example GPIO pin, adjust as needed
 
-# Create GPS object
-uart = busio.UART(board.TX, board.RX, baudrate=9600, timeout=30)
-gps = adafruit_gps.GPS(uart, debug=False)
-
 # Define GPIO setup
-def setup_gpio():
-    GPIO.setmode(GPIO.BCM)
-    for pin in SENSOR_PINS:
-        GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.setup(SERVO_PIN, GPIO.OUT)
+GPIO.setmode(GPIO.BCM)
+for pin in SENSOR_PINS:
+    GPIO.setup(pin, GPIO.IN)
+
+GPIO.setup(SERVO_PIN, GPIO.OUT)
+
+pwm = GPIO.PWM(SERVO_PIN, 50)
+pwm.start(0)
 
 
 def update_servo_angle(angle):
+    global pwm
     duty_cycle = (angle / 18) + 2  # Map angle to duty cycle (2 to 12)
-    servo.start(duty_cycle)
+    GPIO.output(SERVO_PIN, True)
+    pwm.ChangeDutyCycle(duty_cycle)
     time.sleep(1)  # Let the servo move to the desired angle
-    servo.stop()
-
+    GPIO.output(SERVO_PIN, True)
+    pwm.ChangeDutyCycle(0)
 
 # GPIO cleanup
 def cleanup_gpio():
+    pwm.stop()
     GPIO.cleanup()
 
 @app.route('/')
@@ -71,11 +71,6 @@ def handler():
         else:
             calculated_water_level = 99
         
-        # Read GPS data
-        gps.update()
-        if gps.has_fix:
-            latitude = gps.latitude
-            longitude = gps.longitude
         
         time.sleep(2)
 
@@ -110,7 +105,6 @@ def update_percentage():
 
 
 if __name__ == '__main__':
-    setup_gpio()
     handler_thread = threading.Thread(target=handler)
     handler_thread.start()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
