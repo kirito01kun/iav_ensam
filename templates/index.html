@@ -64,7 +64,7 @@
                 </div>
             <div class="col-md-12 mb-5 mt-5 text-center">
                 <p>GPS values:</p>
-                <p>XXXXXX XXXXXXXXXX XXXXXXXXXX:</p>
+                <p id="gpsValues">Loading...</p>
 
             </div>
         </div>
@@ -75,6 +75,7 @@
             Realise par LAGSYER Meryeme
         </div>
     </div>
+
 
 
     <script>
@@ -122,7 +123,27 @@
                 console.error('Error updating percentage on the server:', error);
             });
         }
+
+        // Update GPS values using data received from the Flask backend
+        function updateGPSValues(latitude, longitude) {
+            var gpsValuesElement = document.getElementById("gpsValues");
+            gpsValuesElement.textContent = "Latitude: " + latitude + ", Longitude: " + longitude;
+        }
+
+        function fetchGPSValues() {
+            fetch('/get_gps_values') // Create a route to get GPS values from the Flask backend
+                .then(response => response.json())
+                .then(data => {
+                    updateGPSValues(data.latitude, data.longitude);
+                })
+                .catch(error => {
+                    console.error('Error fetching GPS values:', error);
+                });
+        }
+
+        setInterval(fetchGPSValues, 5000);
     </script>
-    
+  
+  
 </body>
 </html>

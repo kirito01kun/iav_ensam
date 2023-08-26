@@ -8,6 +8,7 @@ import time
 app = Flask(__name__)
 
 calculated_water_level = 100
+gps_val = [33.969246, -6.876551]
 
 # Configure GPIO pins for sensors 
 SENSOR_PINS = [17, 18, 22, 23]
@@ -61,15 +62,15 @@ def handler():
         s4 = GPIO.input(SENSOR_PINS[3])
         s = s1 + s2 + s3 + s4
         if s == 0:
-            calculated_water_level = 0
+            calculated_water_level = 99
         elif s == 1:
-            calculated_water_level = 25
+            calculated_water_level = 75
         elif s == 2:
             calculated_water_level = 50
         elif s == 3:
-            calculated_water_level = 75
+            calculated_water_level = 25
         else:
-            calculated_water_level = 99
+            calculated_water_level = 0
         
         
         time.sleep(2)
@@ -80,6 +81,10 @@ def get_water_level():
     global calculated_water_level
     return jsonify({'water_level': calculated_water_level})
 
+@app.route('/get_gps_values')
+def get_gps_values():
+    global gps_val
+    return jsonify({'latitude': gps_val[0], 'longitude': gps_val[1]})
 
 @app.route('/update_percentage', methods=['POST'])
 def update_percentage():
