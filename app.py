@@ -11,7 +11,7 @@ calculated_water_level = 100
 gps_val = [33.969246, -6.876551]
 
 # Configure GPIO pins for sensors 
-SENSOR_PINS = [17, 18, 22, 23]
+SENSOR_PINS = [17, 18, 23, 24]
 
 # Configure GPIO pin for servo motor
 SERVO_PIN = 27  # Example GPIO pin, adjust as needed
